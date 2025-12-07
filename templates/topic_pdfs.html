@@ -1,0 +1,153 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ topic.name }} PDFs - Dalil Docs{% endblock %}
+
+{% block content %}
+<style>
+    .topic-header {
+        text-align: center;
+        margin: 20px 0 30px;
+    }
+
+    .topic-image-large {
+        width: 100%;
+        max-width: 600px;
+        aspect-ratio: 16 / 9;
+        border-radius: 15px;
+        object-fit: cover;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        margin-bottom: 20px;
+    }
+
+    .topic-title {
+        color: var(--primary);
+        font-size: 26px;
+        font-weight: 700;
+        margin: 20px 0 10px;
+    }
+
+    .topic-description {
+        color: var(--text-light);
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+
+    .back-button {
+        display: inline-block;
+        margin-bottom: 30px;
+    }
+
+    .pdf-list {
+        display: grid;
+        gap: 16px;
+        margin: 20px 0;
+    }
+
+    .pdf-item {
+        background: var(--white);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        border-left: 5px solid var(--primary);
+        transition: all 0.3s ease;
+    }
+
+    .pdf-item:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        transform: translateX(5px);
+    }
+
+    .pdf-title {
+        color: var(--primary);
+        font-size: 17px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 15px;
+    }
+
+    .pdf-actions a {
+        flex: 1;
+        text-align: center;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-view {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: var(--accent);
+        transform: translateY(-2px);
+    }
+
+    .btn-download {
+        background: #4db8a3;
+        color: white;
+    }
+
+    .btn-download:hover {
+        background: #3da090;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+</style>
+
+<div class="topic-header">
+    {% if topic.image %}
+        <img src="/uploads/topics/{{ topic.image }}" alt="{{ topic.name }}" class="topic-image-large">
+    {% endif %}
+    
+    <h1 class="topic-title">{{ topic.name }}</h1>
+    <p class="topic-description">Is mawzoo par mojood tamam PDFs</p>
+</div>
+
+<div style="text-align: center;" class="back-button">
+    <a href="{{ url_for('pdfs') }}" class="btn btn-primary">⬅️ Tamam Topics</a>
+</div>
+
+{% if topic.pdfs %}
+    <div class="pdf-list">
+        {% for pdf in topic.pdfs %}
+        <div class="pdf-item">
+            <div class="pdf-title">
+                <span>📑</span>
+                <span>{{ pdf.title }}</span>
+            </div>
+            <div class="pdf-actions">
+                <a href="{{ url_for('view_pdf', pdf_id=pdf.id) }}" class="btn-view">👁️ Parhein</a>
+                <a href="{{ url_for('download_pdf', pdf_id=pdf.id) }}" class="btn-download">⬇️ Download</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div style="font-size: 60px; margin-bottom: 20px;">📄</div>
+        <h3 style="color: var(--primary); margin-bottom: 10px;">Koi PDF Mojood Nahi</h3>
+        <p style="color: var(--text-light);">Is topic mein abhi tak koi PDF shamil nahi ki gayi</p>
+    </div>
+{% endif %}
+
+{% endblock %}

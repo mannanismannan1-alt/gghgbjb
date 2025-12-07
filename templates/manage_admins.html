@@ -1,0 +1,114 @@
+
+{% extends "base.html" %}
+
+{% block title %}Admins Manage Karen - Dalil Docs{% endblock %}
+
+{% block content %}
+<h1 style="color: var(--primary); margin: 30px 0; text-align: center;">👥 Admins Manage Karen</h1>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">⬅️ Dashboard par Jayen</a>
+</div>
+
+{% if need_verification %}
+<div class="card" style="max-width: 500px; margin: 50px auto;">
+    <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">🔐 Tasdeeq ki Zaroorat Hai</h2>
+    <p style="text-align: center; margin-bottom: 20px;">Is safhe tak rasai ke liye main admin password darj karen</p>
+    <form method="POST">
+        <input type="hidden" name="action" value="verify">
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Password:</label>
+        <input type="password" name="verify_password" required placeholder="Password" autofocus>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+            Tasdeeq Karen
+        </button>
+    </form>
+</div>
+{% else %}
+<div class="card">
+    <h2 style="color: var(--primary); margin-bottom: 20px;">Naya Admin</h2>
+    <form method="POST">
+        <input type="hidden" name="action" value="add">
+        
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Username:</label>
+        <input type="text" name="username" required placeholder="Username">
+        
+        <label style="font-weight: bold; display: block; margin-bottom: 5px; margin-top: 15px;">Password:</label>
+        <input type="password" name="password" required placeholder="Password">
+        
+        <p style="font-size: 14px; color: #666; margin-top: 5px;">
+            Note: Har admin ka alag password hoga
+        </p>
+        
+        <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
+            Admin Shamil Karen
+        </button>
+    </form>
+</div>
+
+<h2 style="color: var(--primary); margin: 30px 0;">Active Admins</h2>
+
+<div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <p style="margin: 0; color: #856404;">
+        <strong>📌 Note:</strong> Passwords hashed form mein store hote hain (security ke liye). 
+        Password dekhne ke liye "Password Reset" button use karen - naya password generate hoga aur screen pe dikhega.
+    </p>
+</div>
+
+<div class="grid">
+    {% for admin in admins %}
+    <div class="card">
+        <h3 style="color: var(--primary);">
+            {% if admin.is_main %}
+            👑 
+            {% else %}
+            👤 
+            {% endif %}
+            {{ admin.username }}
+        </h3>
+        
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-top: 10px; font-family: monospace;">
+            <p style="margin: 5px 0; font-size: 13px;">
+                <strong style="color: var(--primary);">👤 Username:</strong> {{ admin.username }}
+            </p>
+            <p style="margin: 5px 0; font-size: 13px;">
+                <strong style="color: var(--primary);">🔐 Password:</strong> 
+                <span style="color: #666;">●●●●●●●● (Hashed - Secure)</span>
+            </p>
+            <p style="margin: 5px 0; font-size: 11px; color: #888;">
+                Created: {{ admin.password[:20] }}... (Hash Preview)
+            </p>
+        </div>
+        
+        {% if admin.is_main %}
+        <span style="background: var(--accent); color: var(--dark); padding: 5px 10px; border-radius: 5px; font-size: 14px; display: inline-block; margin-top: 10px;">
+            👑 Main Admin
+        </span>
+        <p style="font-size: 12px; color: #666; margin-top: 10px;">
+            💡 Password change karne ke liye <a href="{{ url_for('change_password') }}" style="color: var(--primary);">Change Password</a> option use karen
+        </p>
+        {% else %}
+        <p style="font-size: 12px; color: #888; margin-top: 8px; font-style: italic;">
+            Last Password Reset: {{ admin.password[-10:] }} (Hash Suffix)
+        </p>
+        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="action" value="reset_password">
+                <input type="hidden" name="admin_id" value="{{ admin.id }}">
+                <button type="submit" class="btn btn-primary" onclick="return confirm('⚠️ Naya password generate karen?\n\nNaya password screen pe dikhega jo aap copy kar sakte hain.')">
+                    🔑 Password Reset Karen
+                </button>
+            </form>
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="admin_id" value="{{ admin.id }}">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Kya aap waqai {{ admin.username }} ko hazf karna chahte hain?')">
+                    🗑️ Hazf Karen
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

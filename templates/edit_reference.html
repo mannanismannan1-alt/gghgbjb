@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Reference - Admin{% endblock %}
+
+{% block content %}
+<style>
+    .edit-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .edit-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        text-align: left;
+    }
+
+    .edit-title {
+        color: var(--primary);
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+
+    .btn-row {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+    }
+</style>
+
+<div class="edit-container">
+    <a href="{{ url_for('admin_references') }}" style="color: var(--primary); text-decoration: none; margin-bottom: 20px; display: block;">← Back to References</a>
+
+    <div class="edit-card">
+        <h2 class="edit-title">Edit Reference</h2>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label>Reference Title:</label>
+                <input type="text" name="title" value="{{ reference.title }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Topic:</label>
+                <select name="topic_id" required>
+                    {% for topic in topics %}
+                    <option value="{{ topic.id }}" {% if reference.topic_id == topic.id %}selected{% endif %}>{{ topic.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Content:</label>
+                <textarea name="content" rows="15" required>{{ reference.content }}</textarea>
+            </div>
+
+            <div class="btn-row">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+                <a href="{{ url_for('admin_references') }}" class="btn btn-danger" style="flex: 1; text-align: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

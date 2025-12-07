@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 20px 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .stat-number {
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: var(--text-light);
+    }
+
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 30px 0;
+    }
+
+    .action-card {
+        padding: 25px;
+        text-align: center;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: block;
+    }
+
+    .action-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .action-icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+
+    .action-title {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .popular-section {
+        margin: 30px 0;
+    }
+
+    .popular-title {
+        color: var(--primary);
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .popular-list {
+        background: var(--white);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .popular-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .popular-item:last-child {
+        border-bottom: none;
+    }
+
+    .popular-name {
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    .popular-views {
+        font-size: 13px;
+        color: var(--text-light);
+    }
+</style>
+
+<h1 style="color: var(--primary); margin: 30px 0; text-align: center;">🔐 Dashboard</h1>
+
+<div class="card" style="text-align: center; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white;">
+    <h2>Khush Aamdeed, {{ session.admin_username }}!</h2>
+    <p style="margin-top: 10px;">{% if admin.is_main %}Main Admin{% else %}Admin Panel{% endif %}</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card" style="background: #fff3e0;">
+        <div class="stat-number">{{ stats.pending_questions }}</div>
+        <div class="stat-label">Muntazir Sawalat</div>
+    </div>
+
+    <div class="stat-card" style="background: #e3f2fd;">
+        <div class="stat-number">{{ stats.total_pdfs }}</div>
+        <div class="stat-label">Total PDFs</div>
+    </div>
+
+    <div class="stat-card" style="background: #e8f5e9;">
+        <div class="stat-number">{{ stats.pdf_categories }}</div>
+        <div class="stat-label">PDF Categories</div>
+    </div>
+
+    <div class="stat-card" style="background: #fce4ec;">
+        <div class="stat-number">{{ stats.total_references }}</div>
+        <div class="stat-label">Total References</div>
+    </div>
+
+    <div class="stat-card" style="background: #f3e5f5;">
+        <div class="stat-number">{{ stats.ref_topics }}</div>
+        <div class="stat-label">Reference Topics</div>
+    </div>
+
+    <div class="stat-card" style="background: #e0f7fa;">
+        <div class="stat-number">{{ stats.total_views }}</div>
+        <div class="stat-label">Total Views</div>
+        <div style="font-size: 11px; margin-top: 5px; color: #666;">
+            PDF: {{ stats.pdf_views }} | Ref: {{ stats.ref_views }}
+        </div>
+    </div>
+
+    <div class="stat-card" style="background: #fff8e1;">
+        <div class="stat-number">{{ stats.total_downloads }}</div>
+        <div class="stat-label">Downloads</div>
+    </div>
+
+    <div class="stat-card" style="background: #efebe9;">
+        <div class="stat-number">{{ stats.total_bookmarks }}</div>
+        <div class="stat-label">Bookmarks</div>
+    </div>
+</div>
+
+<div class="action-grid">
+    <a href="{{ url_for('admin_pdfs') }}" class="action-card btn btn-primary">
+        <div class="action-icon">📄</div>
+        <div class="action-title">PDFs Manage Karen</div>
+    </a>
+
+    <a href="{{ url_for('admin_references') }}" class="action-card btn btn-primary">
+        <div class="action-icon">📚</div>
+        <div class="action-title">Hawala Jaat Manage Karen</div>
+    </a>
+
+    <a href="{{ url_for('admin_questions') }}" class="action-card btn btn-primary">
+        <div class="action-icon">💬</div>
+        <div class="action-title">Sawalat Manage Karen</div>
+    </a>
+
+    {% if admin.is_main %}
+    <a href="{{ url_for('manage_admins') }}" class="action-card btn btn-accent">
+        <div class="action-icon">👥</div>
+        <div class="action-title">Admins Manage Karen</div>
+    </a>
+    {% endif %}
+    
+    <a href="{{ url_for('change_password') }}" class="action-card" style="background: #f44336; color: white;">
+        <div class="action-icon">🔐</div>
+        <div class="action-title">Password Badlein</div>
+    </a>
+    
+    <a href="{{ url_for('admin_logout') }}" class="action-card" style="background: #757575; color: white;">
+        <div class="action-icon">🚪</div>
+        <div class="action-title">Logout</div>
+    </a>
+</div>
+
+<div class="popular-section">
+    <h3 class="popular-title">🔥 Maqbool PDFs</h3>
+    <div class="popular-list">
+        {% for pdf in popular_pdfs %}
+        <div class="popular-item">
+            <span class="popular-name">{{ pdf.title }}</span>
+            <span class="popular-views">👁️ {{ pdf.view_count or 0 }}</span>
+        </div>
+        {% else %}
+        <div class="popular-item">
+            <span class="popular-name" style="color: var(--text-light);">Koi PDF nahi</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="popular-section">
+    <h3 class="popular-title">🔥 Maqbool Hawale</h3>
+    <div class="popular-list">
+        {% for ref in popular_refs %}
+        <div class="popular-item">
+            <span class="popular-name">{{ ref.title }}</span>
+            <span class="popular-views">👁️ {{ ref.view_count or 0 }}</span>
+        </div>
+        {% else %}
+        <div class="popular-item">
+            <span class="popular-name" style="color: var(--text-light);">Koi Hawala nahi</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

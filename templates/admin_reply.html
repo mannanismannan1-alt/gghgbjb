@@ -1,0 +1,36 @@
+
+{% extends "base.html" %}
+
+{% block title %}Reply to Question - Admin{% endblock %}
+
+{% block content %}
+<h1 style="color: var(--primary); margin: 30px 0; text-align: center;">Jawab Dain</h1>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{{ url_for('admin_questions') }}" class="btn btn-primary">⬅️ Wapas</a>
+</div>
+
+<div class="card" style="background: #f0f0f0;">
+    <h3 style="color: var(--primary);">Sawal:</h3>
+    <p style="font-weight: bold; margin: 10px 0;">{{ question.user_name }}</p>
+    <p style="margin: 10px 0; line-height: 2;">{{ question.question }}</p>
+    <p style="font-size: 14px; color: #666;">
+        {{ question.created_at.strftime('%d-%m-%Y %H:%M') }}
+    </p>
+</div>
+
+<div class="card">
+    <h2 style="color: var(--primary); margin-bottom: 20px;">Jawab Likhen</h2>
+    <form method="POST">
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Paigham:</label>
+        <textarea name="reply_message" rows="6" placeholder="Jawab ka paigham likhen"></textarea>
+        
+        <label style="font-weight: bold; display: block; margin-bottom: 5px; margin-top: 15px;">Hawala:</label>
+        <textarea name="reply_reference" rows="8" placeholder="Hawala likhen (ikhtiyari)"></textarea>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+            Jawab Bhaijain
+        </button>
+    </form>
+</div>
+{% endblock %}

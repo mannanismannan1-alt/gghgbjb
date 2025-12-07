@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Manage References - Admin{% endblock %}
+
+{% block content %}
+<style>
+    .form-group {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+    
+    .form-group input[type="file"] {
+        padding: 8px;
+        border: 2px solid var(--primary);
+        border-radius: 6px;
+    }
+
+    .section-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        text-align: left;
+    }
+
+    .section-title {
+        color: var(--primary);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--primary);
+        text-align: left;
+    }
+
+    .item-grid {
+        display: grid;
+        gap: 15px;
+    }
+
+    .item-card {
+        background: var(--white);
+        padding: 16px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px var(--shadow);
+        text-align: left;
+    }
+
+    .item-header {
+        display: flex;
+        gap: 15px;
+        align-items: start;
+        margin-bottom: 15px;
+    }
+
+    .item-image {
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    .item-info {
+        flex: 1;
+    }
+
+    .item-title {
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .item-meta {
+        font-size: 13px;
+        color: var(--text-light);
+    }
+
+    .item-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .ref-list {
+        margin-top: 15px;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+    }
+
+    .ref-item {
+        background: #f9f9f9;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .ref-title {
+        color: var(--secondary);
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .ref-preview {
+        color: var(--text-light);
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 10px;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 2px solid var(--primary);
+        background: var(--white);
+        color: var(--primary);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+        background: var(--primary);
+        color: white;
+    }
+</style>
+
+<h1 style="color: var(--primary); margin: 30px 0; text-align: center;">📚 Manage References</h1>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">← Dashboard</a>
+</div>
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="showTab('topics')">📁 Topics</button>
+    <button class="tab-btn" onclick="showTab('refs')">📖 References</button>
+</div>
+
+<div id="topics-tab">
+    <div class="section-card">
+        <h2 class="section-title">Add New Topic</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="add_topic">
+            
+            <div class="form-group">
+                <label>Topic Name:</label>
+                <input type="text" name="topic_name" required placeholder="Enter topic name">
+            </div>
+
+            <div class="form-group">
+                <label>Description (Optional):</label>
+                <textarea name="topic_description" rows="2" placeholder="Brief description"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Topic Image (Optional):</label>
+                <input type="file" name="topic_image" accept="image/*">
+                <small style="color: var(--text-light);">JPG, PNG, GIF or WebP format</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Add Topic</button>
+        </form>
+    </div>
+
+    <h3 style="color: var(--primary); margin: 25px 0 15px; text-align: left;">Existing Topics ({{ topics|length }})</h3>
+    <div class="item-grid">
+        {% for topic in topics %}
+        <div class="item-card">
+            <div class="item-header">
+                {% if topic.image %}
+                    <img src="/uploads/ref_topics/{{ topic.image }}" alt="{{ topic.name }}" class="item-image">
+                {% endif %}
+                <div class="item-info">
+                    <div class="item-title">{{ topic.name }}</div>
+                    <div class="item-meta">{{ topic.references|length }} References | Views: {{ topic.view_count or 0 }}</div>
+                    {% if topic.description %}
+                        <div class="item-meta">{{ topic.description[:80] }}...</div>
+                    {% endif %}
+                </div>
+                <div class="item-actions">
+                    <a href="{{ url_for('edit_ref_topic', topic_id=topic.id) }}" class="btn btn-primary" style="font-size: 12px; padding: 6px 12px;">Edit</a>
+                    <form method="POST" action="{{ url_for('delete_ref_topic', topic_id=topic.id) }}" style="margin: 0;">
+                        <button type="submit" class="btn btn-danger" style="font-size: 12px; padding: 6px 12px;" onclick="return confirm('Delete this topic and all its references?')">Delete</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if topic.references %}
+            <div class="ref-list">
+                {% for ref in topic.references[:3] %}
+                <div class="ref-item">
+                    <div class="ref-title">{{ ref.title }}</div>
+                    <div class="ref-preview">{{ ref.content[:100] }}...</div>
+                    <div class="item-actions">
+                        <a href="{{ url_for('edit_reference', ref_id=ref.id) }}" class="btn btn-primary" style="font-size: 11px; padding: 4px 10px;">Edit</a>
+                        <form method="POST" action="{{ url_for('delete_reference', ref_id=ref.id) }}" style="margin: 0;">
+                            <button type="submit" class="btn btn-danger" style="font-size: 11px; padding: 4px 10px;" onclick="return confirm('Delete?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if topic.references|length > 3 %}
+                <p style="color: var(--text-light); font-size: 13px;">+ {{ topic.references|length - 3 }} more references...</p>
+                {% endif %}
+            </div>
+            {% else %}
+            <p style="color: var(--text-light); font-size: 13px; margin-top: 10px;">No references yet</p>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="section-card" style="text-align: center;">
+            <p style="color: var(--text-light);">No topics yet</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="refs-tab" style="display: none;">
+    <div class="section-card">
+        <h2 class="section-title">Add New Reference</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="add_reference">
+            
+            <div class="form-group">
+                <label>Select Topic:</label>
+                <select name="topic_id" required>
+                    <option value="">Choose a topic</option>
+                    {% for topic in topics %}
+                    <option value="{{ topic.id }}">{{ topic.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Reference Title:</label>
+                <input type="text" name="ref_title" required placeholder="Enter title">
+            </div>
+            
+            <div class="form-group">
+                <label>Reference Content:</label>
+                <textarea name="ref_content" rows="10" required placeholder="Enter the full reference content here..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Add Reference</button>
+        </form>
+    </div>
+
+    <h3 style="color: var(--primary); margin: 25px 0 15px; text-align: left;">All References ({{ references|length }})</h3>
+    <div class="item-grid">
+        {% for ref in references %}
+        <div class="ref-item">
+            <div class="ref-title">{{ ref.title }}</div>
+            <div class="item-meta" style="margin-bottom: 8px;">Topic: {{ ref.topic.name }} | Views: {{ ref.view_count or 0 }}</div>
+            <div class="ref-preview">{{ ref.content[:150] }}...</div>
+            <div class="item-actions" style="margin-top: 10px;">
+                <a href="{{ url_for('view_reference', ref_id=ref.id) }}" target="_blank" class="btn btn-primary" style="font-size: 11px; padding: 4px 10px;">View</a>
+                <a href="{{ url_for('edit_reference', ref_id=ref.id) }}" class="btn btn-primary" style="font-size: 11px; padding: 4px 10px;">Edit</a>
+                <form method="POST" action="{{ url_for('delete_reference', ref_id=ref.id) }}" style="margin: 0;">
+                    <button type="submit" class="btn btn-danger" style="font-size: 11px; padding: 4px 10px;" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="section-card" style="text-align: center;">
+            <p style="color: var(--text-light);">No references yet</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function showTab(tabName) {
+    document.getElementById('topics-tab').style.display = 'none';
+    document.getElementById('refs-tab').style.display = 'none';
+    
+    document.getElementById(tabName + '-tab').style.display = 'block';
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+}
+</script>
+
+{% endblock %}

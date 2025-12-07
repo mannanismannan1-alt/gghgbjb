@@ -1,0 +1,93 @@
+
+{% extends "base.html" %}
+
+{% block title %}Bookmarks - Dalil Docs{% endblock %}
+
+{% block content %}
+<style>
+    .bookmark-item {
+        background: var(--white);
+        padding: 18px;
+        border-radius: 10px;
+        margin: 12px 0;
+        box-shadow: 0 2px 6px var(--shadow);
+        border-left: 4px solid var(--primary);
+    }
+    
+    .bookmark-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+    }
+    
+    .bookmark-title {
+        color: var(--primary);
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .bookmark-topic {
+        color: var(--text-light);
+        font-size: 13px;
+        margin-top: 4px;
+    }
+    
+    .remove-bookmark {
+        background: #ff5252;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .remove-bookmark:hover {
+        background: #e53935;
+    }
+</style>
+
+<h1 style="color: var(--primary); text-align: center; margin: 20px 0;">📌 Bookmarked References</h1>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{{ url_for('references') }}" class="btn btn-primary">⬅️ Hawala Jaat</a>
+</div>
+
+{% if bookmarks %}
+    {% for bookmark in bookmarks %}
+    <div class="bookmark-item">
+        <div class="bookmark-header">
+            <div style="flex-grow: 1;">
+                <div class="bookmark-title">{{ bookmark.reference.title }}</div>
+                {% if bookmark.reference.topic %}
+                    <div class="bookmark-topic">📚 {{ bookmark.reference.topic.name }}</div>
+                {% endif %}
+            </div>
+            <form method="POST" action="{{ url_for('toggle_bookmark', ref_id=bookmark.reference.id) }}" style="margin: 0;">
+                <button type="submit" class="remove-bookmark">❌ Hatain</button>
+            </form>
+        </div>
+        <p style="line-height: 1.8; color: var(--text-light); white-space: pre-wrap; margin: 12px 0;">{{ bookmark.reference.content[:200] }}...</p>
+        <a href="{{ url_for('view_reference', ref_id=bookmark.reference.id) }}" style="color: var(--primary); font-size: 13px; font-weight: 500;">
+            Pura dekhen →
+        </a>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="card" style="text-align: center; margin-top: 40px;">
+        <p style="font-size: 16px; color: var(--text-light); margin-bottom: 16px;">
+            💭 Koi bookmark nahi
+        </p>
+        <p style="font-size: 14px; color: #999;">
+            References ko bookmark karein tahe ke liye quick access ke liye
+        </p>
+        <a href="{{ url_for('references') }}" class="btn btn-primary" style="margin-top: 16px;">
+            Hawala Jaat Dekhen
+        </a>
+    </div>
+{% endif %}
+
+{% endblock %}

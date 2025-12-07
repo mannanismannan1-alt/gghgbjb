@@ -1,0 +1,56 @@
+
+{% extends "base.html" %}
+
+{% block title %}Hum Se Pochain - Dalil Docs{% endblock %}
+
+{% block content %}
+<h1 style="color: var(--primary); margin: 30px 0; text-align: center;">💬 Hum Se Pochain</h1>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="POST" id="questionForm">
+        <label style="font-weight: bold; display: block; margin-bottom: 8px; color: var(--dark);">📝 Aap ka Naam:</label>
+        <input type="text" name="name" id="userName" required placeholder="Apna naam likhen" style="margin-bottom: 20px;">
+
+        <label style="font-weight: bold; display: block; margin-bottom: 8px; color: var(--dark);">❓ Aap ka Sawal:</label>
+        <textarea name="question" rows="6" required placeholder="Apna sawal detail mein likhen" style="margin-bottom: 20px;"></textarea>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">📤 Sawal Bhaijain</button>
+    </form>
+
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+        <h3 style="text-align: center; color: var(--primary); margin-bottom: 15px;">🔍 Apne Sawalat Dekhen</h3>
+        <p style="text-align: center; color: #666; margin-bottom: 15px; font-size: 14px;">Apne naam se sawalat aur jawabat dekhen</p>
+        <button type="button" class="btn btn-accent" style="width: 100%;" onclick="checkMyQuestions()">
+            Meray Sawalat
+        </button>
+    </div>
+</div>
+
+<script>
+function checkMyQuestions() {
+    const userName = document.getElementById('userName').value.trim();
+    if (!userName) {
+        alert('Pehle apna naam likhen');
+        document.getElementById('userName').focus();
+        return;
+    }
+    window.location.href = `/my_questions/${encodeURIComponent(userName)}`;
+}
+
+// Form submit ke baad naam save karen
+document.getElementById('questionForm').addEventListener('submit', function(e) {
+    const userName = document.getElementById('userName').value.trim();
+    if (userName) {
+        localStorage.setItem('savedUserName', userName);
+    }
+});
+
+// Page load par saved naam set karen
+window.addEventListener('load', function() {
+    const savedName = localStorage.getItem('savedUserName');
+    if (savedName) {
+        document.getElementById('userName').value = savedName;
+    }
+});
+</script>
+{% endblock %}

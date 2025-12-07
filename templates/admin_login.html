@@ -1,0 +1,26 @@
+
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Dalil Docs{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 50px auto;">
+    <h1 style="color: var(--primary); text-align: center; margin-bottom: 30px;">🔐 Admin Login</h1>
+
+    <form method="POST" action="{{ url_for('admin_login') }}">
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">Username:</label>
+        <input type="text" name="username" required placeholder="Username">
+
+        <label style="font-weight: bold; display: block; margin-bottom: 5px; margin-top: 15px;">Password:</label>
+        <input type="password" name="password" required placeholder="Password">
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+            Login Karen
+        </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{{ url_for('home') }}" class="btn btn-accent">Home par Jayen</a>
+    </div>
+</div>
+{% endblock %}

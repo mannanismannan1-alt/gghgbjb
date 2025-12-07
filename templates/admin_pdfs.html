@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Manage PDFs - Admin{% endblock %}
+
+{% block content %}
+<style>
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+    
+    .section-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .section-title {
+        color: var(--primary);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--primary);
+    }
+
+    .item-grid {
+        display: grid;
+        gap: 15px;
+    }
+
+    .item-card {
+        background: var(--white);
+        padding: 16px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 15px;
+    }
+
+    .item-info {
+        flex: 1;
+    }
+
+    .item-title {
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .item-meta {
+        font-size: 13px;
+        color: var(--text-light);
+    }
+
+    .item-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .category-header {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .category-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 2px solid var(--primary);
+        background: var(--white);
+        color: var(--primary);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+        background: var(--primary);
+        color: white;
+    }
+</style>
+
+<h1 style="color: var(--primary); margin: 30px 0; text-align: center;">📄 PDFs Manage Karen</h1>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">⬅️ Dashboard</a>
+</div>
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="showTab('categories')">📁 Categories</button>
+    <button class="tab-btn" onclick="showTab('pdfs')">📄 PDFs</button>
+    <button class="tab-btn" onclick="showTab('bulk')">📦 Bulk Upload</button>
+</div>
+
+<div id="categories-tab">
+    <div class="section-card">
+        <h2 class="section-title">Nayi Category Shamil Karen</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="add_category">
+            
+            <div class="form-group">
+                <label>Category ka Naam:</label>
+                <input type="text" name="category_name" required placeholder="Category ka naam likhen">
+            </div>
+            
+            <div class="form-group">
+                <label>Tafseel (Ikhtiyari):</label>
+                <textarea name="category_description" rows="2" placeholder="Mukhtasar tafseel"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Category ki Tasweer (Ikhtiyari):</label>
+                <input type="file" name="category_image" accept="image/*">
+                <small style="color: var(--text-light);">JPG, PNG, GIF ya WebP format</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Category Shamil Karen</button>
+        </form>
+    </div>
+
+    <h3 style="color: var(--primary); margin: 25px 0 15px;">Mojoodah Categories</h3>
+    <div class="item-grid">
+        {% for cat in categories %}
+        <div class="item-card">
+            <div class="category-header">
+                {% if cat.image %}
+                    <img src="/uploads/pdf_topics/{{ cat.image }}" alt="{{ cat.name }}" class="category-image">
+                {% endif %}
+                <div class="item-info">
+                    <div class="item-title">{{ cat.name }}</div>
+                    <div class="item-meta">{{ cat.pdfs|length }} PDFs • 👁️ {{ cat.view_count or 0 }} views</div>
+                    {% if cat.description %}
+                        <div class="item-meta">{{ cat.description[:100] }}{% if cat.description|length > 100 %}...{% endif %}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="item-actions">
+                <a href="{{ url_for('edit_pdf_category', cat_id=cat.id) }}" class="btn btn-primary" style="font-size: 12px; padding: 6px 12px;">✏️ Edit</a>
+                <form method="POST" action="{{ url_for('delete_pdf_category', cat_id=cat.id) }}" style="margin: 0;">
+                    <button type="submit" class="btn btn-danger" style="font-size: 12px; padding: 6px 12px;" onclick="return confirm('Yeh category aur iss ke tamam PDFs hazf ho jayenge!')">🗑️ Hazf</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="section-card" style="text-align: center;">
+            <p style="color: var(--text-light);">Koi category nahi</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="pdfs-tab" style="display: none;">
+    <div class="section-card">
+        <h2 class="section-title">Nayi PDF Shamil Karen</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="add_pdf">
+            
+            <div class="form-group">
+                <label>PDF ka Unwaan:</label>
+                <input type="text" name="title" required placeholder="Unwaan likhen">
+            </div>
+            
+            <div class="form-group">
+                <label>Category Chunain:</label>
+                <select name="category_id">
+                    <option value="">Koi nahi</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Tafseel (Ikhtiyari):</label>
+                <textarea name="pdf_description" rows="2" placeholder="PDF ki mukhtasar tafseel"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>PDF File:</label>
+                <input type="file" name="pdf_file" accept=".pdf" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">PDF Shamil Karen</button>
+        </form>
+    </div>
+
+    <h3 style="color: var(--primary); margin: 25px 0 15px;">Mojoodah PDFs ({{ pdfs|length }})</h3>
+    <div class="item-grid">
+        {% for pdf in pdfs %}
+        <div class="item-card">
+            <div class="item-info">
+                <div class="item-title">{{ pdf.title }}</div>
+                <div class="item-meta">
+                    {% if pdf.category %}📁 {{ pdf.category.name }}{% else %}Uncategorized{% endif %}
+                    • 👁️ {{ pdf.view_count or 0 }} views
+                    • ⬇️ {{ pdf.download_count or 0 }} downloads
+                </div>
+                <div class="item-meta">{{ pdf.uploaded_at.strftime('%d-%m-%Y') }}</div>
+            </div>
+            <div class="item-actions">
+                <a href="{{ url_for('view_pdf', pdf_id=pdf.id) }}" target="_blank" class="btn btn-primary" style="font-size: 12px; padding: 6px 12px;">👁️</a>
+                <a href="{{ url_for('edit_pdf', pdf_id=pdf.id) }}" class="btn btn-primary" style="font-size: 12px; padding: 6px 12px;">✏️</a>
+                <form method="POST" action="{{ url_for('delete_pdf', pdf_id=pdf.id) }}" style="margin: 0;">
+                    <button type="submit" class="btn btn-danger" style="font-size: 12px; padding: 6px 12px;" onclick="return confirm('Hazf Karen?')">🗑️</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="section-card" style="text-align: center;">
+            <p style="color: var(--text-light);">Koi PDF nahi</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="bulk-tab" style="display: none;">
+    <div class="section-card">
+        <h2 class="section-title">📦 Bulk Upload - Ek Saath Kai PDFs</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="bulk_upload">
+            
+            <div class="form-group">
+                <label>Category Chunain:</label>
+                <select name="bulk_category_id">
+                    <option value="">Koi nahi</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>PDF Files (Multiple select karein):</label>
+                <input type="file" name="bulk_pdfs" accept=".pdf" multiple required>
+                <small style="color: var(--text-light);">Ctrl/Cmd dabake multiple files select karein</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Sab Upload Karen</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function showTab(tabName) {
+    document.getElementById('categories-tab').style.display = 'none';
+    document.getElementById('pdfs-tab').style.display = 'none';
+    document.getElementById('bulk-tab').style.display = 'none';
+    
+    document.getElementById(tabName + '-tab').style.display = 'block';
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+}
+</script>
+
+{% endblock %}

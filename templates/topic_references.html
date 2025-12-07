@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.name }} - Hawala Jaat{% endblock %}
+
+{% block content %}
+<style>
+    .topic-header {
+        text-align: center;
+        margin: 30px 0;
+        padding: 20px;
+        background: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .topic-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 12px;
+        object-fit: cover;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .topic-title {
+        color: var(--primary);
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .topic-description {
+        color: var(--text-light);
+        font-size: 15px;
+        max-width: 600px;
+        margin: 0 auto 15px;
+    }
+
+    .topic-stats {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        font-size: 14px;
+        color: var(--text-light);
+    }
+
+    .sort-bar {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+    .sort-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 1px solid var(--primary);
+    }
+
+    .sort-btn.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .sort-btn:not(.active) {
+        background: var(--white);
+        color: var(--primary);
+    }
+
+    .reference-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .reference-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .reference-card:hover {
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+
+    .reference-title {
+        color: var(--primary);
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .reference-preview {
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 12px;
+    }
+
+    .reference-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        color: var(--text-light);
+    }
+
+    .reference-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .bookmark-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 5px;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--white);
+        border-radius: 12px;
+    }
+</style>
+
+<a href="{{ url_for('references') }}" class="back-link">← Back to Topics</a>
+
+<div class="topic-header">
+    {% if topic.image %}
+        <img src="/uploads/ref_topics/{{ topic.image }}" alt="{{ topic.name }}" class="topic-image">
+    {% else %}
+        <div style="font-size: 60px; margin-bottom: 15px;">📚</div>
+    {% endif %}
+    <h1 class="topic-title">{{ topic.name }}</h1>
+    {% if topic.description %}
+        <p class="topic-description">{{ topic.description }}</p>
+    {% endif %}
+    <div class="topic-stats">
+        <span>📄 {{ references|length }} Hawale</span>
+        <span>👁️ {{ topic.view_count or 0 }} views</span>
+    </div>
+</div>
+
+<div class="sort-bar">
+    <a href="{{ url_for('topic_references', topic_id=topic.id, sort='newest') }}" class="sort-btn {{ 'active' if sort == 'newest' else '' }}">🕐 Newest</a>
+    <a href="{{ url_for('topic_references', topic_id=topic.id, sort='popular') }}" class="sort-btn {{ 'active' if sort == 'popular' else '' }}">🔥 Popular</a>
+    <a href="{{ url_for('topic_references', topic_id=topic.id, sort='az') }}" class="sort-btn {{ 'active' if sort == 'az' else '' }}">🔤 A-Z</a>
+</div>
+
+{% if references %}
+    <div class="reference-list">
+        {% for ref in references %}
+        <a href="{{ url_for('view_reference', ref_id=ref.id) }}" class="reference-card">
+            <h3 class="reference-title">{{ ref.title }}</h3>
+            <p class="reference-preview">{{ ref.content[:200] }}{% if ref.content|length > 200 %}...{% endif %}</p>
+            <div class="reference-meta">
+                <span>👁️ {{ ref.view_count or 0 }} views • {{ ref.created_at.strftime('%d-%m-%Y') }}</span>
+                <span class="reference-actions">
+                    <span>Read more →</span>
+                </span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div style="font-size: 50px; margin-bottom: 15px;">📚</div>
+        <h3 style="color: var(--primary); margin-bottom: 10px;">No References Yet</h3>
+        <p style="color: var(--text-light);">This topic doesn't have any references yet</p>
+    </div>
+{% endif %}
+
+{% endblock %}

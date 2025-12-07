@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Search - Dalil Docs{% endblock %}
+
+{% block content %}
+<style>
+    .search-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .search-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .search-title {
+        color: var(--primary);
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 10px;
+        max-width: 600px;
+        margin: 0 auto 20px;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 15px 20px;
+        border: 2px solid var(--primary);
+        border-radius: 30px;
+        font-size: 16px;
+        outline: none;
+    }
+
+    .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2);
+    }
+
+    .search-btn {
+        padding: 15px 30px;
+        border-radius: 30px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .filter-bar {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 1px solid var(--primary);
+    }
+
+    .filter-btn.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .filter-btn:not(.active) {
+        background: var(--white);
+        color: var(--primary);
+    }
+
+    .results-section {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        color: var(--primary);
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--primary);
+    }
+
+    .result-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 15px;
+    }
+
+    .result-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        transition: all 0.3s ease;
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .result-type {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .type-pdf {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+
+    .type-reference {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .type-category {
+        background: #fff3e0;
+        color: #ef6c00;
+    }
+
+    .type-topic {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .result-title {
+        color: var(--primary);
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .result-preview {
+        color: var(--text-light);
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 10px;
+    }
+
+    .result-meta {
+        font-size: 12px;
+        color: var(--text-light);
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--white);
+        border-radius: 12px;
+    }
+
+    .no-results-icon {
+        font-size: 60px;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="search-container">
+    <div class="search-header">
+        <h1 class="search-title">🔍 Search</h1>
+        
+        <form action="{{ url_for('search') }}" method="GET" class="search-box">
+            <input type="text" name="q" value="{{ query }}" class="search-input" placeholder="Search PDFs and References...">
+            <button type="submit" class="search-btn">Search</button>
+        </form>
+    </div>
+
+    {% if query %}
+    <div class="filter-bar">
+        <a href="{{ url_for('search', q=query, type='all', sort=sort) }}" class="filter-btn {{ 'active' if search_type == 'all' else '' }}">All</a>
+        <a href="{{ url_for('search', q=query, type='pdfs', sort=sort) }}" class="filter-btn {{ 'active' if search_type == 'pdfs' else '' }}">📄 PDFs</a>
+        <a href="{{ url_for('search', q=query, type='references', sort=sort) }}" class="filter-btn {{ 'active' if search_type == 'references' else '' }}">📚 References</a>
+    </div>
+
+    {% if pdfs or references or categories or topics %}
+        
+        {% if categories %}
+        <div class="results-section">
+            <h2 class="section-title">📁 PDF Categories ({{ categories|length }})</h2>
+            <div class="result-grid">
+                {% for cat in categories %}
+                <a href="{{ url_for('pdf_category', category_id=cat.id) }}" class="result-card">
+                    <span class="result-type type-category">Category</span>
+                    <h3 class="result-title">{{ cat.name }}</h3>
+                    {% if cat.description %}
+                    <p class="result-preview">{{ cat.description[:100] }}...</p>
+                    {% endif %}
+                    <div class="result-meta">{{ cat.pdfs|length }} PDFs</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if pdfs %}
+        <div class="results-section">
+            <h2 class="section-title">📄 PDFs ({{ pdfs|length }})</h2>
+            <div class="result-grid">
+                {% for pdf in pdfs %}
+                <a href="{{ url_for('view_pdf', pdf_id=pdf.id) }}" class="result-card">
+                    <span class="result-type type-pdf">PDF</span>
+                    <h3 class="result-title">{{ pdf.title }}</h3>
+                    {% if pdf.description %}
+                    <p class="result-preview">{{ pdf.description[:100] }}...</p>
+                    {% endif %}
+                    <div class="result-meta">👁️ {{ pdf.view_count or 0 }} views</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if topics %}
+        <div class="results-section">
+            <h2 class="section-title">📚 Reference Topics ({{ topics|length }})</h2>
+            <div class="result-grid">
+                {% for topic in topics %}
+                <a href="{{ url_for('topic_references', topic_id=topic.id) }}" class="result-card">
+                    <span class="result-type type-topic">Topic</span>
+                    <h3 class="result-title">{{ topic.name }}</h3>
+                    {% if topic.description %}
+                    <p class="result-preview">{{ topic.description[:100] }}...</p>
+                    {% endif %}
+                    <div class="result-meta">{{ topic.references|length }} References</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if references %}
+        <div class="results-section">
+            <h2 class="section-title">📖 References ({{ references|length }})</h2>
+            <div class="result-grid">
+                {% for ref in references %}
+                <a href="{{ url_for('view_reference', ref_id=ref.id) }}" class="result-card">
+                    <span class="result-type type-reference">Reference</span>
+                    <h3 class="result-title">{{ ref.title }}</h3>
+                    <p class="result-preview">{{ ref.content[:100] }}...</p>
+                    <div class="result-meta">👁️ {{ ref.view_count or 0 }} views</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <div class="no-results">
+            <div class="no-results-icon">🔍</div>
+            <h3 style="color: var(--primary); margin-bottom: 10px;">No Results Found</h3>
+            <p style="color: var(--text-light);">Try different keywords or check spelling</p>
+        </div>
+    {% endif %}
+
+    {% else %}
+        <div class="no-results">
+            <div class="no-results-icon">🔍</div>
+            <h3 style="color: var(--primary); margin-bottom: 10px;">Start Searching</h3>
+            <p style="color: var(--text-light);">Enter keywords to search PDFs and References</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

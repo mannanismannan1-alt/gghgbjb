@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}{{ reference.title }} - Dalil Docs{% endblock %}
+
+{% block content %}
+<style>
+    .reference-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .reference-card {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .reference-header {
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 20px;
+        margin-bottom: 25px;
+    }
+
+    .reference-title {
+        color: var(--primary);
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        line-height: 1.4;
+    }
+
+    .reference-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        font-size: 14px;
+        color: var(--text-light);
+    }
+
+    .reference-content {
+        font-size: 16px;
+        line-height: 1.8;
+        color: var(--text);
+        white-space: pre-wrap;
+    }
+
+    .reference-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .action-btn {
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-bookmark {
+        background: #f0f0f0;
+        color: var(--text);
+    }
+
+    .btn-bookmark.active {
+        background: #ffd700;
+        color: #333;
+    }
+
+    .btn-share {
+        background: var(--secondary);
+        color: white;
+    }
+
+    .btn-print {
+        background: var(--primary);
+        color: white;
+    }
+
+    @media print {
+        .back-link, .reference-actions {
+            display: none !important;
+        }
+        
+        .reference-card {
+            box-shadow: none;
+            border: 1px solid #ddd;
+        }
+    }
+</style>
+
+<div class="reference-container">
+    <a href="{{ url_for('topic_references', topic_id=reference.topic_id) }}" class="back-link">← Back to {{ reference.topic.name }}</a>
+
+    <div class="reference-card">
+        <div class="reference-header">
+            <h1 class="reference-title">{{ reference.title }}</h1>
+            <div class="reference-meta">
+                <span>📚 {{ reference.topic.name }}</span>
+                <span>👁️ {{ reference.view_count or 0 }} views</span>
+                <span>📅 {{ reference.created_at.strftime('%d-%m-%Y') }}</span>
+            </div>
+        </div>
+
+        <div class="reference-content">{{ reference.content }}</div>
+
+        <div class="reference-actions">
+            <form action="{{ url_for('toggle_bookmark', ref_id=reference.id) }}" method="POST" style="margin: 0;">
+                <button type="submit" class="action-btn btn-bookmark">
+                    📌 Bookmark
+                </button>
+            </form>
+            
+            <button onclick="copyReference()" class="action-btn btn-share">
+                📋 Copy
+            </button>
+            
+            <button onclick="window.print()" class="action-btn btn-print">
+                🖨️ Print
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyReference() {
+    const titleEl = document.querySelector('.reference-title');
+    const contentEl = document.querySelector('.reference-content');
+    const title = titleEl ? titleEl.innerText : '';
+    const content = contentEl ? contentEl.innerText : '';
+    
+    const textToCopy = '📚 ' + title + '\n\n' + content + '\n\n✨ Dalil Docs - Islamic Reference Library';
+    
+    const tempTextarea = document.createElement('textarea');
+    tempTextarea.style.position = 'fixed';
+    tempTextarea.style.left = '-9999px';
+    tempTextarea.value = textToCopy;
+    document.body.appendChild(tempTextarea);
+    tempTextarea.select();
+    tempTextarea.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        alert('✅ Copy ho gaya!');
+    } catch (err) {
+        alert('Copy nahi ho saka.');
+    }
+    document.body.removeChild(tempTextarea);
+}
+</script>
+
+{% endblock %}
